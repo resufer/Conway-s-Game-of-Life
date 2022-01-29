@@ -1,0 +1,91 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+body {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  align-items: center;
+  width: 100vw;
+  height: 100vh;
+}
+
+.initial {
+  width: 700px;
+  height: 200px;
+  background-color: antiquewhite;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.title {
+  height: 100px;
+  font-size: calc(1vw + 10px);
+  text-align: center;
+}
+
+.warn {
+  font-size: calc(1vw + 10px);
+  text-align: center;
+  color: darkblue;
+}
+
+.count {
+  width: 100px;
+  height: 40px;
+}
+
+.create {
+  margin-top: 25px;
+  width: 100px;
+  height: 30px;
+}
+
+.menu {
+  position: absolute;
+  left: 10px;
+  top: 15%;
+  display: flex;
+  flex-flow: column nowrap;
+  justify-content: center;
+  align-items: center;
+}
+
+.info {
+  font-size: calc(0.75vw + 7.5px);
+}
+
+.menu select {
+  width: 200px;
+  height: 40px;
+  font-size: calc(0.75vw + 5px);
+  text-align: center;
+}
+
+.menu button {
+  width: 200px;
+  height: 30px;
+  margin-bottom: 10px;
+}
+
+.general {
+  width: 700px;
+  height: 700px;
+  background-color: bisque; 
+  display: grid;
+  border: 5px solid grey;
+}
+
+.alive {
+  background-color: black;
+}
+
+.dead {
+  background-color: white;
+}
