@@ -28,9 +28,9 @@ let general, value;
   });
 })()
 
-
+let gridsMatrix, cellMatrix;
 function startLife() {
-  let [gridsMatrix, cellMatrix] = generateGrids(value);
+  [gridsMatrix, cellMatrix] = generateGrids(value);
   
   let time = 300;
   let interval = setInterval(() => {
@@ -97,7 +97,7 @@ function startLife() {
         });
       }
     }
-    // console.log(matrix);
+
     return matrix
   }
   
@@ -173,13 +173,15 @@ function startLife() {
 };
 
 
-function menuPart() { // добавить выбор цвета смерти/жизни
+function menuPart() {
   let [btn, select] = createMenu();
 
   btn.addEventListener('click', () => {
     let value = select.options[select.options.selectedIndex].value;
     if (value === 'glaider') {
-
+      createGlaider();
+    } else if (value === 'strange1') {
+      strangeThing1()
     } else if (value === 'clear') {
       clearGeneral();
     } else if (value === 'random') {
@@ -201,7 +203,8 @@ function menuPart() { // добавить выбор цвета смерти/ж�
       {name: 'Создать хаос', value: 'random'},
       {name: 'Очистить поле', value: 'clear'},
       {name: 'Создать глайдер', value: 'glaider'},
-      // {name: '', value: ''},
+      {name: 'Непонятная штука 1', value: 'strange1'},
+      // {name: '', value: 'strange1'},
     ];
     for (let i = 0; i < options.length; i++) {
       let option = document.createElement('option');
@@ -218,7 +221,6 @@ function menuPart() { // добавить выбор цвета смерти/ж�
     \n Клавиша "-" уменьшит скорость
     \n Клавиша "пробел" стоп/продолжить
     \n\n`;
-
     menu.insertAdjacentElement('afterbegin', info);
   
     document.body.insertAdjacentElement('afterbegin', menu);
@@ -229,4 +231,116 @@ function menuPart() { // добавить выбор цвета смерти/ж�
     let kids = [...general.children];
     kids.map(kid => kid.remove());
   }
+}
+
+function strangeThing1() {
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < 5) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[1][2].classList.remove('alive');
+  gridsMatrix[1][2].classList.add('dead');
+  gridsMatrix[2][3].classList.remove('alive');
+  gridsMatrix[2][3].classList.add('dead');
+
+  gridsMatrix[3].map((el, ind) => {
+    if (ind === 0 || ind === 4) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    } else if (ind > 0 && ind < 4) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    }
+  });
+
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < 5) {
+      el.state === 'dead';
+    }
+  });
+
+  cellMatrix[1][2].state = 'alive';
+  cellMatrix[2][3].state = 'dead';
+
+  cellMatrix[3].map((el, ind) => {
+    if (ind === 0 || ind === 4) {
+      el.state = 'dead';
+    } else if (ind > 0 && ind < 4) {
+      el.state = 'alive';
+    }
+  });
+}
+
+function createGlaider() {
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < 5) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[1].map((el, ind) => {
+    if (ind === 2) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind !== 2 && ind < 5) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[2].map((el, ind) => {
+    if (ind === 3) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind !== 3 && ind < 5) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  })
+
+  gridsMatrix[3].map((el, ind) => {
+    if (ind === 0 || ind === 4) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    } else if (ind > 0 && ind < 4) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    }
+  });
+
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < 5) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[1].map((el, ind) => {
+    if (ind === 2) {
+      el.state = 'alive';
+    } else if (ind !== 2 && ind < 5) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[2].map((el, ind) => {
+    if (ind === 3) {
+      el.state = 'alive';
+    } else if (ind !== 3 && ind < 5) {
+      el.state = 'dead';
+    }
+  })
+
+  cellMatrix[3].map((el, ind) => {
+    if (ind === 0 || ind === 4) {
+      el.state = 'dead';
+    } else if (ind > 0 && ind < 4) {
+      el.state = 'alive';
+    }
+  });
 }
