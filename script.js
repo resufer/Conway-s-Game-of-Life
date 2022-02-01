@@ -4,17 +4,19 @@ let general, value;
   let initial = document.querySelector('.initial');
   let create = document.querySelector('.create');
   let title = document.querySelector('.title');
+  let subTitle = document.querySelector('.sub_title');
   let warn = document.querySelector('.warn');
   let count = document.querySelector('.count');
   
   create.addEventListener('click', () => {
     value = count.value;
-    if (value > 100 || value < 10) {
+    if (value > 121 || value < 10) {
       warn.innerHTML = 'Выберите доступное значение!';
     } else {
       initial.remove();
       create.remove();
       title.remove();
+      subTitle.remove();
       warn.remove();
       count.remove();
   
@@ -24,6 +26,15 @@ let general, value;
   
       menuPart();
       startLife();
+
+      general.addEventListener('click', clickDraw);
+
+      general.addEventListener('mousedown', function() { // bad work
+        this.addEventListener('mousemove', clickDraw);
+      });
+      general.addEventListener('mouseup', function() {
+        this.removeEventListener('mousemove', clickDraw);
+      });
     }
   });
 })()
@@ -155,10 +166,10 @@ function startLife() {
         }, time);
       }
     } else if (e.key === '+') {
-      time -= 100;
+      time = time <= 0 ? 0 : time - 50;
       createNewInterval();
     } else if (e.key === '-') {
-      time += 100;
+      time += 50;
       createNewInterval();
     } 
 
@@ -174,7 +185,7 @@ function startLife() {
 
 
 function menuPart() {
-  let [btn, select] = createMenu();
+  let [btn, select, checkbox] = createMenu();
 
   btn.addEventListener('click', () => {
     let value = select.options[select.options.selectedIndex].value;
@@ -185,14 +196,42 @@ function menuPart() {
     } else if (value === 'clear') {
       clearGeneral();
     } else if (value === 'random') {
-      clearGeneral();
-      startLife();
+      createChaos();
+    } else if (value === 'gun') {
+      createGun();
+    } else if (value === 'spaceShip1') {
+      createSpaceShip1()
+    } else if (value === 'gun&Destroyer1') {
+      createGunAndDestroyer1()
     }
   });
+
+  checkbox.addEventListener('click', function(e) {
+    let value = this.children[0].checked;
+    this.children[0].checked = value = e.target.type ? value : !value;
+
+    gridsMatrix.forEach(row => {
+      row.forEach(col => {
+        if (value) {
+          col.classList.add('border');
+        } else col.classList.remove('border'); 
+      })
+    })
+  })
 
   function createMenu() {
     let menu = document.createElement('div');
     menu.classList.add('menu');
+
+    let checkboxBlock = document.createElement('div');
+    checkboxBlock.classList.add('checkboxBlock');
+    let checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkboxBlock.appendChild(checkbox);
+    let checkboxTitle = document.createElement('span');
+    checkboxTitle.innerText = 'Сетка вкл/выкл';
+    checkboxBlock.appendChild(checkboxTitle);
+    menu.appendChild(checkboxBlock);
   
     let btn = document.createElement('button');
     btn.innerText = 'Применить'
@@ -200,17 +239,22 @@ function menuPart() {
   
     let select = document.createElement('select');
     let options = [
-      {name: 'Создать хаос', value: 'random'},
-      {name: 'Очистить поле', value: 'clear'},
-      {name: 'Создать глайдер', value: 'glaider'},
-      {name: 'Непонятная штука 1', value: 'strange1'},
-      // {name: '', value: 'strange1'},
+      {name: 'Создать хаос', value: 'random', minGrid: 0},
+      {name: 'Очистить поле', value: 'clear', minGrid: 0},
+      {name: 'Создать глайдер', value: 'glaider', minGrid: 0},
+      {name: 'Космический корабль v1', value: 'spaceShip1', minGrid: 20},
+      {name: 'Пушка и аннигилятор', value: 'gun&Destroyer1', minGrid: 50},
+      {name: 'Создать пушку', value: 'gun', minGrid: 50},
+      {name: 'Непонятная штука 1', value: 'strange1', minGrid: 0},
+      // {name: '', value: ''},
     ];
     for (let i = 0; i < options.length; i++) {
-      let option = document.createElement('option');
-      option.innerText = options[i].name;
-      option.value = options[i].value;
-      select.appendChild(option);
+      if (value >= options[i].minGrid) {
+        let option = document.createElement('option');
+        option.innerText = options[i].name;
+        option.value = options[i].value;
+        select.appendChild(option);
+      }
     };
     menu.appendChild(select);
 
@@ -220,16 +264,50 @@ function menuPart() {
     \n Клавиша "+" увеличит скорость
     \n Клавиша "-" уменьшит скорость
     \n Клавиша "пробел" стоп/продолжить
+    \n alt-клик скроет/покажет эту панель 
+    \n клик по ячейки - создание/удаление жизни
     \n\n`;
     menu.insertAdjacentElement('afterbegin', info);
   
     document.body.insertAdjacentElement('afterbegin', menu);
-    return [btn, select];
+
+    window.addEventListener('click', (e) => { // menu виден благодаря замыканию
+      if (e.altKey) {
+        let prevLeft = menu.style.left;
+        if (prevLeft === '' || prevLeft === '10px') {
+          menu.style.left = '-100vw';
+        } else menu.style.left = '10px';
+      }
+    })
+
+    return [btn, select, checkboxBlock];
+  }
+
+  function createChaos() {
+    gridsMatrix.forEach(row => row.forEach(col => {
+    if (Math.round(Math.random())) {
+      col.classList.remove('alive');
+      col.classList.add('dead');
+    } else {
+      col.classList.remove('dead');
+      col.classList.add('alive');
+    }
+    }));
+
+    cellMatrix.forEach(row => row.forEach(col => {
+      col.state = Math.round(Math.random()) ? 'alive' : 'dead';
+    }));
   }
 
   function clearGeneral() {
-    let kids = [...general.children];
-    kids.map(kid => kid.remove());
+    gridsMatrix.forEach(row => row.forEach(col => {
+      col.classList.remove('alive');
+      col.classList.add('dead');
+    }));
+
+    cellMatrix.forEach(row => row.forEach(col => {
+      col.state = 'dead';
+    }));
   }
 }
 
@@ -287,7 +365,7 @@ function createGlaider() {
     if (ind === 2) {
       el.classList.remove('dead');
       el.classList.add('alive');
-    } else if (ind !== 2 && ind < 5) {
+    } else if (ind < 5) {
       el.classList.remove('alive');
       el.classList.add('dead');
     }
@@ -297,7 +375,7 @@ function createGlaider() {
     if (ind === 3) {
       el.classList.remove('dead');
       el.classList.add('alive');
-    } else if (ind !== 3 && ind < 5) {
+    } else if (ind < 5) {
       el.classList.remove('alive');
       el.classList.add('dead');
     }
@@ -323,7 +401,7 @@ function createGlaider() {
   cellMatrix[1].map((el, ind) => {
     if (ind === 2) {
       el.state = 'alive';
-    } else if (ind !== 2 && ind < 5) {
+    } else if (ind < 5) {
       el.state = 'dead';
     }
   });
@@ -331,7 +409,7 @@ function createGlaider() {
   cellMatrix[2].map((el, ind) => {
     if (ind === 3) {
       el.state = 'alive';
-    } else if (ind !== 3 && ind < 5) {
+    } else if (ind < 5) {
       el.state = 'dead';
     }
   })
@@ -343,4 +421,607 @@ function createGlaider() {
       el.state = 'alive';
     }
   });
+};
+
+function createSpaceShip1() { // 6x7 === 5x6
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[1].map((el, ind) => {
+    if (ind === 4) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[2].map((el, ind) => {
+    if (ind === 5) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[3].map((el, ind) => {
+    if (ind === 1 || ind === 5) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[4].map((el, ind) => {
+    let registry = [2, 3, 4, 5]
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[5].map((el, ind) => {
+    if (ind < 7) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[1].map((el, ind) => {
+    if (ind === 4) {
+      el.state = 'alive';
+    } else if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[2].map((el, ind) => {
+    if (ind === 5) {
+      el.state = 'alive';
+    } else if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[3].map((el, ind) => {
+    if (ind === 1 || ind === 5) {
+      el.state = 'alive';
+    } else if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[4].map((el, ind) => {
+    let registry = [2, 3, 4, 5]
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[5].map((el, ind) => {
+    if (ind < 7) {
+      el.state = 'dead';
+    }
+  });
+}
+
+function createGun() { // 11x38 === 10x37
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[1].map((el, ind) => {
+    if (ind === 25) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[2].map((el, ind) => {
+    if (ind === 25 || ind === 23) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[3].map((el, ind) => {
+    let registry = [13, 14, 21, 22, 35, 36];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[4].map((el, ind) => {
+    let registry = [12, 16, 21, 22, 35, 36];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[5].map((el, ind) => {
+    let registry = [1, 2, 11, 17, 21, 22];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+  
+  gridsMatrix[6].map((el, ind) => {
+    let registry = [1, 2, 11, 15, 17, 18, 23, 25];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[7].map((el, ind) => {
+    let registry = [11, 17, 25];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+  
+  gridsMatrix[8].map((el, ind) => {
+    let registry = [12, 16];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[9].map((el, ind) => {
+    let registry = [13, 14];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < 38) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[1].map((el, ind) => {
+    if (ind === 25) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[2].map((el, ind) => {
+    if (ind === 25 || ind === 23) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[3].map((el, ind) => {
+    let registry = [13, 14, 21, 22, 35, 36];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[4].map((el, ind) => {
+    let registry = [12, 16, 21, 22, 35, 36];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[5].map((el, ind) => {
+    let registry = [1, 2, 11, 17, 21, 22];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+  
+  cellMatrix[6].map((el, ind) => {
+    let registry = [1, 2, 11, 15, 17, 18, 23, 25];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[7].map((el, ind) => {
+    let registry = [11, 17, 25];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+  
+  cellMatrix[8].map((el, ind) => {
+    let registry = [12, 16];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) { 
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[9].map((el, ind) => {
+    let registry = [13, 14];
+    if (registry.includes(ind)) {
+      el.state = 'alive'
+    } else if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < 38) {
+      el.state = 'dead'
+    }
+  });
+}
+
+function createGunAndDestroyer1() { //20x43 === 19x42
+  let max = 43;
+
+  gridsMatrix[0].map((el, ind) => {
+    if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[1].map((el, ind) => {
+    if (ind === 24) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[2].map((el, ind) => {
+    if (ind === 24 || ind === 22) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[3].map((el, ind) => {
+    let registry = [13, 21, 23, 35, 36];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[4].map((el, ind) => {
+    let registry = [12, 13, 20, 23, 35, 36];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[5].map((el, ind) => {
+    let registry = [1, 2, 11, 12, 17, 18, 21, 23];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[6].map((el, ind) => {
+    let registry = [1, 2, 10, 11, 12, 17, 18, 22, 24];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[7].map((el, ind) => {
+    let registry = [11, 12, 17, 18, 24];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[8].map((el, ind) => {
+    if (ind === 12 || ind === 13) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[9].map((el, ind) => {
+    if (ind === 13) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix.slice(10, 16).forEach(
+    row => row.map((el, ind) => {
+      if (ind < max) {
+        el.classList.remove('alive');
+        el.classList.add('dead');
+      }
+    })
+  );
+
+  gridsMatrix[16].map((el, ind) => {
+    let registry = [34, 35, 36, 37, 38, 39, 40, 41];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[17].map((el, ind) => {
+    let registry = [34, 36, 37, 38, 39, 41];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[18].map((el, ind) => {
+    let registry = [34, 35, 36, 37, 38, 39, 40, 41];
+    if (registry.includes(ind)) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[19].map((el, ind) => {
+    if (ind < max) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+
+  cellMatrix[0].map((el, ind) => {
+    if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[1].map((el, ind) => {
+    if (ind === 24) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[2].map((el, ind) => {
+    if (ind === 24 || ind === 22) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[3].map((el, ind) => {
+    let registry = [13, 21, 23, 35, 36];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[4].map((el, ind) => {
+    let registry = [12, 13, 20, 23, 35, 36];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[5].map((el, ind) => {
+    let registry = [1, 2, 11, 12, 17, 18, 21, 23];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[6].map((el, ind) => {
+    let registry = [1, 2, 10, 11, 12, 17, 18, 22, 24];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[7].map((el, ind) => {
+    let registry = [11, 12, 17, 18, 24];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[8].map((el, ind) => {
+    if (ind === 12 || ind === 13) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[9].map((el, ind) => {
+    if (ind === 13) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix.slice(10, 16).forEach(
+    row => row.map((el, ind) => {
+      if (ind < max) {
+        el.state = 'dead';
+      }
+    })
+  );
+
+  cellMatrix[16].map((el, ind) => {
+    let registry = [34, 35, 36, 37, 38, 39, 40, 41];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[17].map((el, ind) => {
+    let registry = [34, 36, 37, 38, 39, 41];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[18].map((el, ind) => {
+    let registry = [34, 35, 36, 37, 38, 39, 40, 41];
+    if (registry.includes(ind)) {
+      el.state = 'alive';
+    } else if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[19].map((el, ind) => {
+    if (ind < max) {
+      el.state = 'dead';
+    }
+  });
+}
+
+
+
+function clickDraw(e) {
+  let target = e.target;
+  let [row, col] = target.classList[0].split('subGrid')[1].split('-');
+  if (target.classList.contains('alive')) {
+    target.classList.remove('alive');
+    target.classList.add('dead');
+    cellMatrix[row - 1][col - 1].state = 'dead';
+  } else if (target.classList.contains('dead')) {
+    target.classList.remove('dead');
+    target.classList.add('alive');
+    cellMatrix[row - 1][col - 1].state = 'alive';
+  }
 }
