@@ -203,6 +203,8 @@ function menuPart() {
       createSpaceShip1()
     } else if (value === 'gun&Destroyer1') {
       createGunAndDestroyer1()
+    } else if (value === 'clock') {
+      createClock();
     }
   });
 
@@ -245,8 +247,11 @@ function menuPart() {
       {name: 'Космический корабль v1', value: 'spaceShip1', minGrid: 20},
       {name: 'Пушка и аннигилятор', value: 'gun&Destroyer1', minGrid: 50},
       {name: 'Создать пушку', value: 'gun', minGrid: 50},
+      {name: 'Часы', value: 'clock', minGrid: 20},
       {name: 'Непонятная штука 1', value: 'strange1', minGrid: 0},
-      // {name: '', value: ''},
+      
+      // {name: '', value: '', minGrid: 0},
+      // {name: '', value: '', minGrid: 0},
     ];
     for (let i = 0; i < options.length; i++) {
       if (value >= options[i].minGrid) {
@@ -309,7 +314,7 @@ function menuPart() {
       col.state = 'dead';
     }));
   }
-}
+} // нужен чекбокс для сетки вкл/выкл
 
 function strangeThing1() {
   gridsMatrix[0].map((el, ind) => {
@@ -424,14 +429,18 @@ function createGlaider() {
 };
 
 function createSpaceShip1() { // 6x7 === 5x6
-  gridsMatrix[0].map((el, ind) => {
+  let limit = gridsMatrix.length;
+  let requiredSpace = 6;
+  let randRowGrid = randRowCell = Math.round(Math.random() * (limit - requiredSpace));
+
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     if (ind < 7) {
       el.classList.remove('alive');
       el.classList.add('dead');
     }
   });
 
-  gridsMatrix[1].map((el, ind) => {
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     if (ind === 4) {
       el.classList.remove('dead');
       el.classList.add('alive');
@@ -441,7 +450,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  gridsMatrix[2].map((el, ind) => {
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     if (ind === 5) {
       el.classList.remove('dead');
       el.classList.add('alive');
@@ -451,7 +460,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  gridsMatrix[3].map((el, ind) => {
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     if (ind === 1 || ind === 5) {
       el.classList.remove('dead');
       el.classList.add('alive');
@@ -461,7 +470,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  gridsMatrix[4].map((el, ind) => {
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     let registry = [2, 3, 4, 5]
     if (registry.includes(ind)) {
       el.classList.remove('dead');
@@ -472,20 +481,20 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  gridsMatrix[5].map((el, ind) => {
+  gridsMatrix[++randRowGrid].map((el, ind) => {
     if (ind < 7) {
       el.classList.remove('alive');
       el.classList.add('dead');
     }
   });
 
-  cellMatrix[0].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     if (ind < 7) {
       el.state = 'dead';
     }
   });
 
-  cellMatrix[1].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     if (ind === 4) {
       el.state = 'alive';
     } else if (ind < 7) {
@@ -493,7 +502,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  cellMatrix[2].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     if (ind === 5) {
       el.state = 'alive';
     } else if (ind < 7) {
@@ -501,7 +510,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  cellMatrix[3].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     if (ind === 1 || ind === 5) {
       el.state = 'alive';
     } else if (ind < 7) {
@@ -509,7 +518,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  cellMatrix[4].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     let registry = [2, 3, 4, 5]
     if (registry.includes(ind)) {
       el.state = 'alive';
@@ -518,7 +527,7 @@ function createSpaceShip1() { // 6x7 === 5x6
     }
   });
 
-  cellMatrix[5].map((el, ind) => {
+  cellMatrix[++randRowCell].map((el, ind) => {
     if (ind < 7) {
       el.state = 'dead';
     }
@@ -1010,6 +1019,244 @@ function createGunAndDestroyer1() { //20x43 === 19x42
   });
 }
 
+function createClock() { //13x13 === 14x14
+  let limit = 13;
+  let mid = Math.floor(gridsMatrix.length / 2 - limit / 2);
+  let i = j = 0;
+  let ifFlag = (ind) => ind < mid + limit && ind > mid - limit;
+  
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  })
+  
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 7 || ind === mid + 8) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 7 || ind === mid + 8) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  })
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6 || ind === mid + 7 || ind === mid + 8) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 1 || ind === mid + 2 || ind === mid + 4 || ind === mid + 9) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 1 || ind === mid + 2 || ind === mid + 4 || ind === mid + 5 || ind === mid + 9) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 4 || ind === mid + 7 || ind === mid + 9 || ind === mid + 11 || ind === mid + 12) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 4 || ind === mid + 6 || ind === mid + 9 || ind === mid + 11 || ind === mid + 12) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6 || ind === mid + 7 || ind === mid + 8) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6) {
+      el.classList.remove('dead');
+      el.classList.add('alive');
+    } else if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  gridsMatrix[mid + i].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.classList.remove('alive');
+      el.classList.add('dead');
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  })
+  
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 7 || ind === mid + 8) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 7 || ind === mid + 8) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  })
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6 || ind === mid + 7 || ind === mid + 8) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 1 || ind === mid + 2 || ind === mid + 4 || ind === mid + 9) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 1 || ind === mid + 2 || ind === mid + 4 || ind === mid + 5 || ind === mid + 9) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 4 || ind === mid + 7 || ind === mid + 9 || ind === mid + 11 || ind === mid + 12) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 4 || ind === mid + 6 || ind === mid + 9 || ind === mid + 11 || ind === mid + 12) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6 || ind === mid + 7 || ind === mid + 8) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j++].map((el, ind) => {
+    if (ind === mid + 5 || ind === mid + 6) {
+      el.state = 'alive';
+    } else if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+
+  cellMatrix[mid + j].map((el, ind) => {
+    if (ifFlag(ind)) {
+      el.state = 'dead';
+    }
+  });
+}
 
 
 function clickDraw(e) {
